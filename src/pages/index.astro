@@ -1,0 +1,43 @@
+---
+import BaseHead from '../components/BaseHead.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
+---
+
+<!doctype html>
+<html lang="zh-CN">
+	<head>
+		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+	</head>
+	<body>
+		<Header />
+		<main>
+			<h1>🤖 AI 智能助手</h1>
+			<p>
+				欢迎使用 AI 智能助手系统。这是一个基于先进人工智能技术的智能助手，可以帮助你完成各种任务。
+			</p>
+			<p>
+				系统主要功能包括：
+			</p>
+			<ul>
+				<li>知识图谱展示：可视化展示知识关联</li>
+				<li>智能问答：回答你的各种问题</li>
+				<li>数据分析：处理和分析各类数据</li>
+				<li>文本生成：根据需求生成文本内容</li>
+			</ul>
+			<p>
+				你可以通过以下方式开始使用：
+			</p>
+			<ul>
+				<li>点击"功能展示"查看具体功能演示</li>
+				<li>在知识图谱页面输入查询内容</li>
+				<li>查看系统使用说明和帮助文档</li>
+			</ul>
+			<p>
+				如果你在使用过程中遇到任何问题，请随时联系我们。
+			</p>
+		</main>
+		<Footer />
+	</body>
+</html>

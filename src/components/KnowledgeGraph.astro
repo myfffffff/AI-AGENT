@@ -1,0 +1,306 @@
+<div class="knowledge-graph-container">
+  <h2>知识图谱展示</h2>
+  <input type="text" id="userInput" placeholder="输入你想查询的内容" />
+  <button id="getBtn">发送请求</button>
+  <div id="model-kg-graph"></div>
+</div>
+
+<style>
+  .knowledge-graph-container {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f4f9;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  }
+
+  h2 {
+    color: #333;
+    font-size: 24px;
+    margin: 20px 0;
+  }
+
+  #userInput {
+    width: 300px;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+    margin-bottom: 20px;
+    outline: none;
+    transition: border-color 0.3s ease;
+  }
+
+  #userInput:focus {
+    border-color: #4CAF50;
+  }
+
+  #getBtn {
+    width: 200px;
+    padding: 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+  }
+
+  #getBtn:hover {
+    background-color: #45a049;
+  }
+
+  #getBtn:active {
+    background-color: #388e3c;
+  }
+
+  #model-kg-graph {
+    width: 90%;
+    height: 600px;
+    max-width: 1000px;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    margin-top: 30px;
+    background-color: white;
+  }
+
+  @media (max-width: 600px) {
+    #userInput {
+      width: 80%;
+    }
+
+    #getBtn {
+      width: 80%;
+    }
+  }
+</style>
+
+<script is:inline src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+<script is:inline>
+  let all = "";
+
+  const getBtn = document.getElementById("getBtn");
+  const userInput = document.getElementById("userInput");
+  const modelKgGraph = document.getElementById("model-kg-graph");
+
+  if (!getBtn || !userInput || !modelKgGraph) {
+    console.error("Required elements not found");
+  } else {
+    getBtn.addEventListener("click", function () {
+      const userContent = userInput.value.trim();
+      if (userContent === "") {
+        alert("请输入查询内容！");
+        return;
+      }
+
+      const data = {
+        inputs: {
+          content: userContent,
+          "sys.files": [],
+          "sys.user_id": "ae79b367-0903-472b-8b0b-0f4523561b28",
+          "sys.app_id": "f0c34eb2-a34d-4fb0-a2d8-456bf40ad55b",
+          "sys.workflow_id": "4d440e4e-87ba-4b5e-a289-69a5e77590bc",
+          "sys.workflow_run_id": "ad576a98-9a5c-4037-a423-dbe0b7e97fe3"
+        },
+        response_mode: "blocking",
+        user: "abc-123"
+      };
+
+      fetch("http://10.1.22.119/v1/workflows/run", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer app-lvMUf914KYMhGIZTFkX8pYlH"
+        },
+        body: JSON.stringify(data)
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const reader = response.body?.getReader();
+          if (!reader) {
+            throw new Error("Response body is null");
+          }
+
+          const decoder = new TextDecoder();
+
+          function readChunk() {
+            reader.read().then(({ done, value }) => {
+              if (done) {
+                try {
+                  let clean = all
+                    .replace(/^```json\s*/i, '')
+                    .replace(/\s*```\s*$/, '')
+                    .trim();
+
+                  let output = JSON.parse(clean);
+
+                  if (typeof output === 'string') {
+                    output = JSON.parse(output);
+                  }
+
+                  if (output?.data?.outputs?.text) {
+                    let text = output.data.outputs.text
+                      .replace(/^```json\s*/i, '')
+                      .replace(/\s*```\s*$/, '')
+                      .trim();
+                    output = JSON.parse(text);
+                  }
+
+                  if (!output.employee_info || !output.publications) {
+                    throw new Error("返回数据格式不符合预期，应包含 employee_info 和 publications 字段！");
+                  }
+
+                  const employeeInfo = output.employee_info;
+                  const publications = output.publications;
+
+                  console.log("员工信息:", employeeInfo);
+                  console.log("论文列表:", publications);
+
+                  initGraph(employeeInfo, publications);
+                } catch (err) {
+                  console.error("解析或构建图谱失败：", err);
+                }
+                return;
+              }
+
+              all += decoder.decode(value);
+              readChunk();
+            });
+          }
+
+          readChunk();
+        })
+        .catch(console.error);
+    });
+  }
+
+  function initGraph(employee_info, publications) {
+    const graph_chart = echarts.init(document.getElementById("model-kg-graph"));
+    let nodes = [];
+    let links = [];
+    let categories = [
+      { name: "中心节点", itemStyle: { color: "#2F5597" } },
+      { name: "员工信息", itemStyle: { color: "#4CAF50" } },
+      { name: "论文", itemStyle: { color: "#F4A742" } },
+      { name: "论文属性", itemStyle: { color: "#E74C3C" } }
+    ];
+
+    nodes.push({
+      id: 'center',
+      name: employee_info.name,
+      symbolSize: 60,
+      category: 0,
+      label: { show: true, fontSize: 16 },
+      itemStyle: { color: "#2F5597" }
+    });
+
+    for (let key in employee_info) {
+      if (key !== "name") {
+        nodes.push({
+          id: `emp_${key}`,
+          name: `${key}: ${employee_info[key]}`,
+          symbolSize: 35,
+          category: 1,
+          label: { show: true, fontSize: 12 },
+          itemStyle: { color: "#4CAF50" }
+        });
+        links.push({
+          source: 'center',
+          target: `emp_${key}`
+        });
+      }
+    }
+
+    publications.forEach((pub, index) => {
+      const pubId = `pub_${index}`;
+      nodes.push({
+        id: pubId,
+        name: pub.Title,
+        symbolSize: 45,
+        category: 2,
+        label: { show: true, fontSize: 14 },
+        itemStyle: { color: "#F4A742" }
+      });
+      links.push({
+        source: 'center',
+        target: pubId
+      });
+
+      for (let attrKey in pub) {
+        const isSummary = attrKey === "Summary";
+        const attrId = `pub_${index}_${attrKey}`;
+        nodes.push({
+          id: attrId,
+          name: isSummary ? "(悬停查看摘要)" : pub[attrKey],
+          symbolSize: 25,
+          category: 3,
+          label: { show: !isSummary, fontSize: 10 },
+          itemStyle: { color: "#E74C3C" },
+          fullSummary: isSummary ? pub[attrKey] : ""
+        });
+        links.push({
+          source: pubId,
+          target: attrId
+        });
+      }
+    });
+
+    const option = {
+      title: {
+        text: '知识图谱',
+        top: 'top',
+        left: 'center'
+      },
+      tooltip: {
+        trigger: 'item',
+        formatter: function (params) {
+          if (params.dataType === 'node' && params.data.fullSummary) {
+            return params.data.fullSummary;
+          }
+          return params.data.name;
+        }
+      },
+      legend: {
+        data: categories.map(cat => cat.name),
+        orient: 'vertical',
+        left: 'left',
+        top: 'middle'
+      },
+      animationDurationUpdate: 1500,
+      animationEasingUpdate: 'quinticInOut',
+      series: [{
+        type: 'graph',
+        layout: 'force',
+        data: nodes,
+        links: links,
+        categories: categories,
+        roam: true,
+        label: {
+          show: true,
+          position: 'right'
+        },
+        force: {
+          repulsion: 100
+        },
+        emphasis: {
+          focus: 'adjacency'
+        }
+      }]
+    };
+
+    graph_chart.setOption(option);
+
+    window.addEventListener('resize', function() {
+      graph_chart.resize();
+    });
+  }
+</script> 
