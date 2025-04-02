@@ -1,0 +1,288 @@
+---
+---
+
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>岗位津贴审核统计与混合查询检索</title>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>岗位津贴审核统计与混合查询检索</h1>
+      <p class="subtitle">智能化的津贴管理与数据分析平台</p>
+    </header>
+
+    <main>
+      <section class="search-section">
+        <h2>查询检索</h2>
+        <div class="search-container">
+          <input type="text" placeholder="请输入查询关键词" />
+          <button class="search-btn">搜索</button>
+        </div>
+        <div class="filter-container">
+          <select>
+            <option value="">选择部门</option>
+            <option value="dept1">部门1</option>
+            <option value="dept2">部门2</option>
+          </select>
+          <select>
+            <option value="">选择岗位类型</option>
+            <option value="type1">类型1</option>
+            <option value="type2">类型2</option>
+          </select>
+          <input type="date" placeholder="开始日期" />
+          <input type="date" placeholder="结束日期" />
+        </div>
+      </section>
+
+      <section class="stats-section">
+        <h2>统计概览</h2>
+        <div class="stats-grid">
+          <div class="stats-card">
+            <h3>待审核</h3>
+            <p class="number">25</p>
+          </div>
+          <div class="stats-card">
+            <h3>已审核</h3>
+            <p class="number">158</p>
+          </div>
+          <div class="stats-card">
+            <h3>本月津贴总额</h3>
+            <p class="number">¥89,750</p>
+          </div>
+          <div class="stats-card">
+            <h3>平均处理时间</h3>
+            <p class="number">2.5天</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="table-section">
+        <h2>审核列表</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>申请编号</th>
+              <th>申请人</th>
+              <th>部门</th>
+              <th>津贴类型</th>
+              <th>申请金额</th>
+              <th>申请时间</th>
+              <th>状态</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>A2024001</td>
+              <td>张三</td>
+              <td>研发部</td>
+              <td>项目津贴</td>
+              <td>¥2,000</td>
+              <td>2024-01-15</td>
+              <td><span class="status pending">待审核</span></td>
+              <td><button class="action-btn">审核</button></td>
+            </tr>
+            <tr>
+              <td>A2024002</td>
+              <td>李四</td>
+              <td>市场部</td>
+              <td>绩效津贴</td>
+              <td>¥1,500</td>
+              <td>2024-01-14</td>
+              <td><span class="status approved">已通过</span></td>
+              <td><button class="action-btn">查看</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </main>
+  </div>
+</body>
+
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Arial', sans-serif;
+    background-color: #f5f5f5;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+
+  h1 {
+    color: #2c3e50;
+    margin: 0;
+    font-size: 2rem;
+  }
+
+  .subtitle {
+    color: #7f8c8d;
+    margin-top: 0.5rem;
+  }
+
+  section {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+
+  h2 {
+    color: #2c3e50;
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+  }
+
+  .search-container {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  input[type="text"] {
+    flex: 1;
+    padding: 0.8rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+  }
+
+  .search-btn {
+    padding: 0.8rem 2rem;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+  }
+
+  .search-btn:hover {
+    background-color: #2980b9;
+  }
+
+  .filter-container {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  select, input[type="date"] {
+    padding: 0.8rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+    min-width: 200px;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .stats-card {
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 8px;
+    text-align: center;
+  }
+
+  .stats-card h3 {
+    margin: 0;
+    color: #7f8c8d;
+    font-size: 1rem;
+  }
+
+  .number {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #2c3e50;
+    margin: 0.5rem 0 0;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+  }
+
+  th, td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+  }
+
+  th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: #2c3e50;
+  }
+
+  .status {
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+  }
+
+  .pending {
+    background-color: #fff3cd;
+    color: #856404;
+  }
+
+  .approved {
+    background-color: #d4edda;
+    color: #155724;
+  }
+
+  .action-btn {
+    padding: 0.5rem 1rem;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  .action-btn:hover {
+    background-color: #2980b9;
+  }
+
+  @media (max-width: 768px) {
+    .container {
+      padding: 1rem;
+    }
+
+    .filter-container {
+      flex-direction: column;
+    }
+
+    select, input[type="date"] {
+      width: 100%;
+      min-width: auto;
+    }
+
+    .stats-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    table {
+      display: block;
+      overflow-x: auto;
+    }
+  }
+</style>
+</html> 

@@ -1,11 +1,20 @@
+<!-- 知识图谱组件 -->
+<!-- 该组件实现了一个交互式的知识图谱展示界面，包含输入框、按钮和图谱展示区域 -->
 <div class="knowledge-graph-container">
   <h2>知识图谱展示</h2>
+  <!-- 用户输入框：用于输入查询内容 -->
   <input type="text" id="userInput" placeholder="输入你想查询的内容" />
+  <!-- 发送请求按钮：触发知识图谱查询 -->
   <button id="getBtn">发送请求</button>
-  <div id="model-kg-graph"></div>
+  <!-- 知识图谱展示区域：使用ECharts绘制图谱 -->
+  <div id="model-kg-graph">
+    <div id="loading-message" class="message hidden">正在生成知识图谱...</div>
+    <div id="error-message" class="message hidden">生成失败，请检查查询内容是否有误</div>
+  </div>
 </div>
 
 <style>
+  /* 知识图谱容器样式 */
   .knowledge-graph-container {
     font-family: 'Arial', sans-serif;
     background-color: #f4f4f9;
@@ -15,16 +24,17 @@
     justify-content: center;
     align-items: center;
     flex-direction: column;
-    border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    min-height: 100vh;
   }
 
+  /* 标题样式 */
   h2 {
     color: #333;
     font-size: 24px;
     margin: 20px 0;
   }
 
+  /* 输入框样式 */
   #userInput {
     width: 300px;
     padding: 10px;
@@ -36,10 +46,12 @@
     transition: border-color 0.3s ease;
   }
 
+  /* 输入框焦点样式 */
   #userInput:focus {
     border-color: #4CAF50;
   }
 
+  /* 按钮样式 */
   #getBtn {
     width: 200px;
     padding: 10px;
@@ -52,14 +64,17 @@
     transition: background-color 0.3s ease;
   }
 
+  /* 按钮悬停样式 */
   #getBtn:hover {
     background-color: #45a049;
   }
 
+  /* 按钮点击样式 */
   #getBtn:active {
     background-color: #388e3c;
   }
 
+  /* 图谱展示区域样式 */
   #model-kg-graph {
     width: 90%;
     height: 600px;
@@ -68,8 +83,34 @@
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     margin-top: 30px;
     background-color: white;
+    position: relative;
   }
 
+  /* 消息提示样式 */
+  .message {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 18px;
+    color: #666;
+    text-align: center;
+    z-index: 1000;
+  }
+
+  #loading-message {
+    color: #4CAF50;
+  }
+
+  #error-message {
+    color: #E74C3C;
+  }
+
+  .hidden {
+    display: none;
+  }
+
+  /* 响应式设计：在小屏幕上适应 */
   @media (max-width: 600px) {
     #userInput {
       width: 80%;
@@ -81,226 +122,246 @@
   }
 </style>
 
-<script is:inline src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
-<script is:inline>
-  let all = "";
+<script>
+  // 导入 ECharts
+  import * as echarts from 'echarts';
 
-  const getBtn = document.getElementById("getBtn");
-  const userInput = document.getElementById("userInput");
-  const modelKgGraph = document.getElementById("model-kg-graph");
+  // 获取DOM元素
+  const userInput = document.getElementById('userInput');
+  const getBtn = document.getElementById('getBtn');
+  const graphContainer = document.getElementById('model-kg-graph');
+  const loadingMessage = document.getElementById('loading-message');
+  const errorMessage = document.getElementById('error-message');
 
-  if (!getBtn || !userInput || !modelKgGraph) {
-    console.error("Required elements not found");
-  } else {
-    getBtn.addEventListener("click", function () {
-      const userContent = userInput.value.trim();
-      if (userContent === "") {
-        alert("请输入查询内容！");
-        return;
-      }
+  // 初始化 ECharts 实例
+  const chart = echarts.init(graphContainer);
 
+  // 处理按钮点击事件
+  getBtn.addEventListener('click', async () => {
+    const query = userInput.value.trim();
+    if (!query) {
+      alert('请输入查询内容');
+      return;
+    }
+
+    // 显示加载状态，隐藏错误状态
+    loadingMessage.classList.remove('hidden');
+    errorMessage.classList.add('hidden');
+
+    try {
+      console.log('开始获取知识图谱数据...');
+      // 发送请求获取知识图谱数据
       const data = {
         inputs: {
-          content: userContent,
+          content: query,
           "sys.files": [],
-          "sys.user_id": "ae79b367-0903-472b-8b0b-0f4523561b28",
+          "sys.user_id": "87177071-eb7a-44d6-92fc-04d5ea693661",
           "sys.app_id": "f0c34eb2-a34d-4fb0-a2d8-456bf40ad55b",
           "sys.workflow_id": "4d440e4e-87ba-4b5e-a289-69a5e77590bc",
-          "sys.workflow_run_id": "ad576a98-9a5c-4037-a423-dbe0b7e97fe3"
+          "sys.workflow_run_id": "79511432-7e78-440b-b06c-dfb4d30d2dbf"
         },
         response_mode: "blocking",
         user: "abc-123"
       };
 
-      fetch("http://10.1.22.119/v1/workflows/run", {
+      console.log('发送请求到API...');
+      const response = await fetch("http://10.1.22.240/v1/workflows/run", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: "Bearer app-lvMUf914KYMhGIZTFkX8pYlH"
+          "Authorization": "Bearer app-lvMUf914KYMhGIZTFkX8pYlH"
         },
         body: JSON.stringify(data)
-      })
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
+      });
 
-          const reader = response.body?.getReader();
-          if (!reader) {
-            throw new Error("Response body is null");
-          }
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
-          const decoder = new TextDecoder();
+      console.log('开始读取响应流...');
+      // 读取响应流
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let all = "";
 
-          function readChunk() {
-            reader.read().then(({ done, value }) => {
-              if (done) {
-                try {
-                  let clean = all
-                    .replace(/^```json\s*/i, '')
-                    .replace(/\s*```\s*$/, '')
-                    .trim();
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        all += decoder.decode(value);
+      }
 
-                  let output = JSON.parse(clean);
+      console.log('原始响应数据:', all);
+      console.log('解析响应数据...');
+      // 解析响应数据
+      let clean = all.replace(/^```json\s*/i, '').replace(/\s*```\s*$/, '').trim();
+      console.log('清理后的数据:', clean);
+      
+      let output = JSON.parse(clean);
+      console.log('解析后的数据:', output);
 
-                  if (typeof output === 'string') {
-                    output = JSON.parse(output);
-                  }
+      if (typeof output === 'string') {
+        console.log('数据是字符串，再次解析');
+        output = JSON.parse(output);
+        console.log('二次解析后的数据:', output);
+      }
 
-                  if (output?.data?.outputs?.text) {
-                    let text = output.data.outputs.text
-                      .replace(/^```json\s*/i, '')
-                      .replace(/\s*```\s*$/, '')
-                      .trim();
-                    output = JSON.parse(text);
-                  }
+      if (output?.data?.outputs?.text) {
+        console.log('数据在 output.data.outputs.text 中');
+        let text = output.data.outputs.text
+          .replace(/^```json\s*/i, '')
+          .replace(/\s*```\s*$/, '')
+          .trim();
+        console.log('提取的文本:', text);
+        output = JSON.parse(text);
+        console.log('最终解析的数据:', output);
+      }
 
-                  if (!output.employee_info || !output.publications) {
-                    throw new Error("返回数据格式不符合预期，应包含 employee_info 和 publications 字段！");
-                  }
+      if (!output.employee_info || !output.publications) {
+        console.error('数据格式检查失败:', {
+          hasEmployeeInfo: !!output.employee_info,
+          hasPublications: !!output.publications,
+          output: output
+        });
+        throw new Error("返回数据格式不符合预期，应包含 employee_info 和 publications 字段！");
+      }
 
-                  const employeeInfo = output.employee_info;
-                  const publications = output.publications;
+      console.log('构建图谱数据...');
+      // 构建图谱数据
+      const employeeInfo = output.employee_info;
+      const publications = output.publications;
+      
+      // 构建节点和连接
+      const nodes = [];
+      const links = [];
+      const categories = [
+        { name: "中心节点", itemStyle: { color: "#2F5597" } },
+        { name: "员工信息", itemStyle: { color: "#4CAF50" } },
+        { name: "论文", itemStyle: { color: "#F4A742" } },
+        { name: "论文属性", itemStyle: { color: "#E74C3C" } }
+      ];
 
-                  console.log("员工信息:", employeeInfo);
-                  console.log("论文列表:", publications);
+      // 添加中心节点
+      nodes.push({
+        id: 'center',
+        name: employeeInfo.name,
+        symbolSize: 60,
+        category: 0
+      });
 
-                  initGraph(employeeInfo, publications);
-                } catch (err) {
-                  console.error("解析或构建图谱失败：", err);
-                }
-                return;
-              }
+      // 添加员工信息节点
+      for (let key in employeeInfo) {
+        if (key !== "name") {
+          nodes.push({
+            id: `emp_${key}`,
+            name: `${key}: ${employeeInfo[key]}`,
+            symbolSize: 40,
+            category: 1
+          });
+          links.push({
+            source: 'center',
+            target: `emp_${key}`
+          });
+        }
+      }
 
-              all += decoder.decode(value);
-              readChunk();
-            });
-          }
-
-          readChunk();
-        })
-        .catch(console.error);
-    });
-  }
-
-  function initGraph(employee_info, publications) {
-    const graph_chart = echarts.init(document.getElementById("model-kg-graph"));
-    let nodes = [];
-    let links = [];
-    let categories = [
-      { name: "中心节点", itemStyle: { color: "#2F5597" } },
-      { name: "员工信息", itemStyle: { color: "#4CAF50" } },
-      { name: "论文", itemStyle: { color: "#F4A742" } },
-      { name: "论文属性", itemStyle: { color: "#E74C3C" } }
-    ];
-
-    nodes.push({
-      id: 'center',
-      name: employee_info.name,
-      symbolSize: 60,
-      category: 0,
-      label: { show: true, fontSize: 16 },
-      itemStyle: { color: "#2F5597" }
-    });
-
-    for (let key in employee_info) {
-      if (key !== "name") {
+      // 添加论文节点
+      publications.forEach((pub, index) => {
+        const pubId = `pub_${index}`;
         nodes.push({
-          id: `emp_${key}`,
-          name: `${key}: ${employee_info[key]}`,
-          symbolSize: 35,
-          category: 1,
-          label: { show: true, fontSize: 12 },
-          itemStyle: { color: "#4CAF50" }
+          id: pubId,
+          name: pub.Title,
+          symbolSize: 50,
+          category: 2
         });
         links.push({
           source: 'center',
-          target: `emp_${key}`
+          target: pubId
         });
-      }
-    }
 
-    publications.forEach((pub, index) => {
-      const pubId = `pub_${index}`;
-      nodes.push({
-        id: pubId,
-        name: pub.Title,
-        symbolSize: 45,
-        category: 2,
-        label: { show: true, fontSize: 14 },
-        itemStyle: { color: "#F4A742" }
+        // 添加论文属性节点
+        for (let attrKey in pub) {
+          const isSummary = attrKey === "Summary";
+          const attrId = `pub_${index}_${attrKey}`;
+          nodes.push({
+            id: attrId,
+            name: isSummary ? "(悬停查看摘要)" : pub[attrKey],
+            symbolSize: 30,
+            category: 3,
+            fullSummary: isSummary ? pub[attrKey] : ""
+          });
+          links.push({
+            source: pubId,
+            target: attrId
+          });
+        }
       });
-      links.push({
-        source: 'center',
-        target: pubId
-      });
 
-      for (let attrKey in pub) {
-        const isSummary = attrKey === "Summary";
-        const attrId = `pub_${index}_${attrKey}`;
-        nodes.push({
-          id: attrId,
-          name: isSummary ? "(悬停查看摘要)" : pub[attrKey],
-          symbolSize: 25,
-          category: 3,
-          label: { show: !isSummary, fontSize: 10 },
-          itemStyle: { color: "#E74C3C" },
-          fullSummary: isSummary ? pub[attrKey] : ""
-        });
-        links.push({
-          source: pubId,
-          target: attrId
-        });
-      }
-    });
-
-    const option = {
-      title: {
-        text: '知识图谱',
-        top: 'top',
-        left: 'center'
-      },
-      tooltip: {
-        trigger: 'item',
-        formatter: function (params) {
-          if (params.dataType === 'node' && params.data.fullSummary) {
-            return params.data.fullSummary;
+      console.log('更新图谱显示...');
+      // 配置图谱选项
+      const option = {
+        title: {
+          text: '知识图谱',
+          top: 'top',
+          left: 'center'
+        },
+        tooltip: {
+          formatter: function(params) {
+            if (params.dataType === 'node') {
+              return params.data.fullSummary || params.data.name;
+            } else {
+              return '';
+            }
           }
-          return params.data.name;
-        }
-      },
-      legend: {
-        data: categories.map(cat => cat.name),
-        orient: 'vertical',
-        left: 'left',
-        top: 'middle'
-      },
-      animationDurationUpdate: 1500,
-      animationEasingUpdate: 'quinticInOut',
-      series: [{
-        type: 'graph',
-        layout: 'force',
-        data: nodes,
-        links: links,
-        categories: categories,
-        roam: true,
-        label: {
-          show: true,
-          position: 'right'
         },
-        force: {
-          repulsion: 100
+        legend: {
+          data: categories.map(cat => cat.name),
+          orient: 'vertical',
+          left: 10,
+          top: 20,
+          data: ['中心节点', '员工信息', '论文', '论文属性']
         },
-        emphasis: {
-          focus: 'adjacency'
-        }
-      }]
-    };
+        animationDurationUpdate: 1500,
+        animationEasingUpdate: 'quinticInOut',
+        series: [{
+          type: 'graph',
+          layout: 'force',
+          data: nodes,
+          links: links,
+          categories: categories,
+          roam: true,
+          label: {
+            show: true,
+            position: 'right'
+          },
+          force: {
+            repulsion: 100,
+            edgeLength: 100
+          },
+          emphasis: {
+            focus: 'adjacency'
+          },
+          lineStyle: {
+            color: '#999',
+            curveness: 0.3
+          }
+        }]
+      };
 
-    graph_chart.setOption(option);
+      // 使用配置项显示图谱
+      chart.setOption(option);
+      
+      // 隐藏加载状态
+      loadingMessage.classList.add('hidden');
+    } catch (error) {
+      console.error('获取知识图谱数据失败:', error);
+      // 显示错误状态
+      loadingMessage.classList.add('hidden');
+      errorMessage.classList.remove('hidden');
+    }
+  });
 
-    window.addEventListener('resize', function() {
-      graph_chart.resize();
-    });
-  }
+  // 监听窗口大小变化，调整图表大小
+  window.addEventListener('resize', () => {
+    chart.resize();
+  });
 </script> 

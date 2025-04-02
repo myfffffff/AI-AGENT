@@ -1,0 +1,137 @@
+---
+// 定义组件的属性接口
+interface Props {
+  title: string;
+  description: string;
+  features: string[];
+  bgColor?: string;
+}
+
+// 获取传入的属性
+const { title, description, features, bgColor = "#f4f4f9" } = Astro.props;
+---
+
+<div class="function-intro" style={`background-color: ${bgColor};`}>
+  <div class="content">
+    <h2>{title}</h2>
+    <p class="description">{description}</p>
+    <div class="features">
+      <h3>主要功能：</h3>
+      <ul>
+        {features.map(feature => (
+          <li>{feature}</li>
+        ))}
+      </ul>
+    </div>
+    <div class="action">
+      <a href={`/${title.toLowerCase().replace(/\s+/g, '-')}`} class="try-button">
+        立即体验
+      </a>
+    </div>
+  </div>
+</div>
+
+<style>
+  .function-intro {
+    padding: 2rem;
+    border-radius: 12px;
+    margin: 1rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+  }
+
+  .function-intro:hover {
+    transform: translateY(-5px);
+  }
+
+  .content {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  h2 {
+    color: #2c3e50;
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+    text-align: center;
+  }
+
+  .description {
+    color: #34495e;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+    text-align: justify;
+  }
+
+  .features {
+    background-color: rgba(255, 255, 255, 0.7);
+    padding: 1.5rem;
+    border-radius: 8px;
+  }
+
+  h3 {
+    color: #2c3e50;
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+  }
+
+  ul {
+    list-style-type: none;
+    padding: 0;
+  }
+
+  li {
+    color: #34495e;
+    margin-bottom: 0.8rem;
+    padding-left: 1.5rem;
+    position: relative;
+  }
+
+  li:before {
+    content: "•";
+    color: #3498db;
+    font-weight: bold;
+    position: absolute;
+    left: 0;
+  }
+
+  .action {
+    text-align: center;
+    margin-top: 2rem;
+  }
+
+  .try-button {
+    display: inline-block;
+    padding: 0.8rem 2rem;
+    background-color: #3498db;
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: background-color 0.3s ease;
+  }
+
+  .try-button:hover {
+    background-color: #2980b9;
+  }
+
+  @media (max-width: 768px) {
+    .function-intro {
+      padding: 1.5rem;
+      margin: 0.8rem;
+    }
+
+    h2 {
+      font-size: 1.5rem;
+    }
+
+    .description {
+      font-size: 1rem;
+    }
+
+    .features {
+      padding: 1rem;
+    }
+  }
+</style> 

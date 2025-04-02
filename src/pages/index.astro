@@ -3,6 +3,59 @@ import BaseHead from '../components/BaseHead.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
+import FunctionIntro from '../components/FunctionIntro.astro';
+
+// 定义功能模块数据
+const modules = [
+	{
+		title: "岗位津贴审核统计与混合查询检索",
+		description: "该模块提供了全面的岗位津贴管理系统，集成了审核、统计和查询功能。系统支持多维度的数据分析，实现了精准的津贴计算和高效的信息检索。",
+		features: [
+			"智能化津贴审核流程，确保数据准确性",
+			"多维度统计分析，支持自定义报表生成",
+			"灵活的混合查询功能，快速定位所需信息",
+			"实时数据更新，保证信息时效性",
+			"完善的权限管理，确保数据安全"
+		],
+		bgColor: "#E3F2FD"
+	},
+	{
+		title: "方案计划生成",
+		description: "基于先进的人工智能算法，为用户提供智能化的方案计划生成服务。系统能够根据输入的需求和约束条件，自动生成最优的解决方案。",
+		features: [
+			"智能需求分析，精准把握用户意图",
+			"多方案对比分析，提供最优选择",
+			"自动生成详细的执行计划",
+			"支持方案的实时调整和优化",
+			"可视化展示方案执行进度"
+		],
+		bgColor: "#F3E5F5"
+	},
+	{
+		title: "多级推理问答识别",
+		description: "采用深度学习技术，实现智能化的多级推理问答系统。能够理解复杂的问题，通过多层次的推理过程，提供准确的答案。",
+		features: [
+			"自然语言理解，精准识别问题意图",
+			"多级推理能力，处理复杂逻辑关系",
+			"知识图谱支持，提供丰富的知识背景",
+			"实时学习优化，持续提升回答质量",
+			"支持多领域专业问题解答"
+		],
+		bgColor: "#E8F5E9"
+	},
+	{
+		title: "知识图谱展示",
+		description: "基于图数据库技术，构建和展示复杂的知识网络关系。通过直观的可视化界面，帮助用户理解和探索知识之间的联系。",
+		features: [
+			"交互式知识图谱可视化",
+			"支持复杂关系网络展示",
+			"实时数据更新和同步",
+			"支持知识节点深度探索",
+			"提供多维度的数据分析视图"
+		],
+		bgColor: "#FFF3E0"
+	}
+];
 ---
 
 <!doctype html>
@@ -37,6 +90,14 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 			<p>
 				如果你在使用过程中遇到任何问题，请随时联系我们。
 			</p>
+			{modules.map(module => (
+				<FunctionIntro
+					title={module.title}
+					description={module.description}
+					features={module.features}
+					bgColor={module.bgColor}
+				/>
+			))}
 		</main>
 		<Footer />
 	</body>
