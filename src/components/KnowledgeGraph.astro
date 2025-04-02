@@ -165,194 +165,208 @@
       };
 
       console.log('发送请求到API...');
-      const response = await fetch("http://10.1.22.240/v1/workflows/run", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer app-lvMUf914KYMhGIZTFkX8pYlH"
-        },
-        body: JSON.stringify(data)
-      });
-
-      if (!response.ok) {
-        console.error('API请求失败:', response.status, response.statusText);
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      console.log('开始读取响应流...');
-      // 读取响应流
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let all = "";
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        all += decoder.decode(value);
-      }
-
-      console.log('原始响应数据:', all);
-      console.log('解析响应数据...');
-      // 解析响应数据
-      let clean = all.replace(/^```json\s*/i, '').replace(/\s*```\s*$/, '').trim();
-      console.log('清理后的数据:', clean);
-      
-      let output = JSON.parse(clean);
-      console.log('解析后的数据:', output);
-
-      if (typeof output === 'string') {
-        console.log('数据是字符串，再次解析');
-        output = JSON.parse(output);
-        console.log('二次解析后的数据:', output);
-      }
-
-      if (output?.data?.outputs?.text) {
-        console.log('数据在 output.data.outputs.text 中');
-        let text = output.data.outputs.text
-          .replace(/^```json\s*/i, '')
-          .replace(/\s*```\s*$/, '')
-          .trim();
-        console.log('提取的文本:', text);
-        output = JSON.parse(text);
-        console.log('最终解析的数据:', output);
-      }
-
-      if (!output.employee_info || !output.publications) {
-        console.error('数据格式检查失败:', {
-          hasEmployeeInfo: !!output.employee_info,
-          hasPublications: !!output.publications,
-          output: output
+      try {
+        const response = await fetch("http://10.1.22.240/v1/workflows/run", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer app-lvMUf914KYMhGIZTFkX8pYlH"
+          },
+          body: JSON.stringify(data)
         });
-        throw new Error("返回数据格式不符合预期，应包含 employee_info 和 publications 字段！");
-      }
 
-      console.log('构建图谱数据...');
-      // 构建图谱数据
-      const employeeInfo = output.employee_info;
-      const publications = output.publications;
-      
-      // 构建节点和连接
-      const nodes = [];
-      const links = [];
-      const categories = [
-        { name: "中心节点", itemStyle: { color: "#2F5597" } },
-        { name: "员工信息", itemStyle: { color: "#4CAF50" } },
-        { name: "论文", itemStyle: { color: "#F4A742" } },
-        { name: "论文属性", itemStyle: { color: "#E74C3C" } }
-      ];
+        console.log('API响应状态:', response.status);
+        console.log('API响应头:', Object.fromEntries(response.headers.entries()));
 
-      // 添加中心节点
-      nodes.push({
-        id: 'center',
-        name: employeeInfo.name,
-        symbolSize: 60,
-        category: 0
-      });
+        if (!response.ok) {
+          console.error('API请求失败:', {
+            status: response.status,
+            statusText: response.statusText,
+            headers: Object.fromEntries(response.headers.entries())
+          });
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
 
-      // 添加员工信息节点
-      for (let key in employeeInfo) {
-        if (key !== "name") {
+        console.log('开始读取响应流...');
+        // 读取响应流
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let all = "";
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          all += decoder.decode(value);
+        }
+
+        console.log('原始响应数据:', all);
+        console.log('解析响应数据...');
+        // 解析响应数据
+        let clean = all.replace(/^```json\s*/i, '').replace(/\s*```\s*$/, '').trim();
+        console.log('清理后的数据:', clean);
+        
+        let output = JSON.parse(clean);
+        console.log('解析后的数据:', output);
+
+        if (typeof output === 'string') {
+          console.log('数据是字符串，再次解析');
+          output = JSON.parse(output);
+          console.log('二次解析后的数据:', output);
+        }
+
+        if (output?.data?.outputs?.text) {
+          console.log('数据在 output.data.outputs.text 中');
+          let text = output.data.outputs.text
+            .replace(/^```json\s*/i, '')
+            .replace(/\s*```\s*$/, '')
+            .trim();
+          console.log('提取的文本:', text);
+          output = JSON.parse(text);
+          console.log('最终解析的数据:', output);
+        }
+
+        if (!output.employee_info || !output.publications) {
+          console.error('数据格式检查失败:', {
+            hasEmployeeInfo: !!output.employee_info,
+            hasPublications: !!output.publications,
+            output: output
+          });
+          throw new Error("返回数据格式不符合预期，应包含 employee_info 和 publications 字段！");
+        }
+
+        console.log('构建图谱数据...');
+        // 构建图谱数据
+        const employeeInfo = output.employee_info;
+        const publications = output.publications;
+        
+        // 构建节点和连接
+        const nodes = [];
+        const links = [];
+        const categories = [
+          { name: "中心节点", itemStyle: { color: "#2F5597" } },
+          { name: "员工信息", itemStyle: { color: "#4CAF50" } },
+          { name: "论文", itemStyle: { color: "#F4A742" } },
+          { name: "论文属性", itemStyle: { color: "#E74C3C" } }
+        ];
+
+        // 添加中心节点
+        nodes.push({
+          id: 'center',
+          name: employeeInfo.name,
+          symbolSize: 60,
+          category: 0
+        });
+
+        // 添加员工信息节点
+        for (let key in employeeInfo) {
+          if (key !== "name") {
+            nodes.push({
+              id: `emp_${key}`,
+              name: `${key}: ${employeeInfo[key]}`,
+              symbolSize: 40,
+              category: 1
+            });
+            links.push({
+              source: 'center',
+              target: `emp_${key}`
+            });
+          }
+        }
+
+        // 添加论文节点
+        publications.forEach((pub, index) => {
+          const pubId = `pub_${index}`;
           nodes.push({
-            id: `emp_${key}`,
-            name: `${key}: ${employeeInfo[key]}`,
-            symbolSize: 40,
-            category: 1
+            id: pubId,
+            name: pub.Title,
+            symbolSize: 50,
+            category: 2
           });
           links.push({
             source: 'center',
-            target: `emp_${key}`
+            target: pubId
           });
-        }
-      }
 
-      // 添加论文节点
-      publications.forEach((pub, index) => {
-        const pubId = `pub_${index}`;
-        nodes.push({
-          id: pubId,
-          name: pub.Title,
-          symbolSize: 50,
-          category: 2
+          // 添加论文属性节点
+          for (let attrKey in pub) {
+            const isSummary = attrKey === "Summary";
+            const attrId = `pub_${index}_${attrKey}`;
+            nodes.push({
+              id: attrId,
+              name: isSummary ? "(悬停查看摘要)" : pub[attrKey],
+              symbolSize: 30,
+              category: 3,
+              fullSummary: isSummary ? pub[attrKey] : ""
+            });
+            links.push({
+              source: pubId,
+              target: attrId
+            });
+          }
         });
-        links.push({
-          source: 'center',
-          target: pubId
-        });
 
-        // 添加论文属性节点
-        for (let attrKey in pub) {
-          const isSummary = attrKey === "Summary";
-          const attrId = `pub_${index}_${attrKey}`;
-          nodes.push({
-            id: attrId,
-            name: isSummary ? "(悬停查看摘要)" : pub[attrKey],
-            symbolSize: 30,
-            category: 3,
-            fullSummary: isSummary ? pub[attrKey] : ""
-          });
-          links.push({
-            source: pubId,
-            target: attrId
-          });
-        }
-      });
-
-      console.log('更新图谱显示...');
-      // 配置图谱选项
-      const option = {
-        title: {
-          text: '知识图谱',
-          top: 'top',
-          left: 'center'
-        },
-        tooltip: {
-          formatter: function(params) {
-            if (params.dataType === 'node') {
-              return params.data.fullSummary || params.data.name;
-            } else {
-              return '';
+        console.log('更新图谱显示...');
+        // 配置图谱选项
+        const option = {
+          title: {
+            text: '知识图谱',
+            top: 'top',
+            left: 'center'
+          },
+          tooltip: {
+            formatter: function(params) {
+              if (params.dataType === 'node') {
+                return params.data.fullSummary || params.data.name;
+              } else {
+                return '';
+              }
             }
-          }
-        },
-        legend: {
-          data: categories.map(cat => cat.name),
-          orient: 'vertical',
-          left: 10,
-          top: 20,
-          data: ['中心节点', '员工信息', '论文', '论文属性']
-        },
-        animationDurationUpdate: 1500,
-        animationEasingUpdate: 'quinticInOut',
-        series: [{
-          type: 'graph',
-          layout: 'force',
-          data: nodes,
-          links: links,
-          categories: categories,
-          roam: true,
-          label: {
-            show: true,
-            position: 'right'
           },
-          force: {
-            repulsion: 100,
-            edgeLength: 100
+          legend: {
+            data: categories.map(cat => cat.name),
+            orient: 'vertical',
+            left: 10,
+            top: 20,
+            data: ['中心节点', '员工信息', '论文', '论文属性']
           },
-          emphasis: {
-            focus: 'adjacency'
-          },
-          lineStyle: {
-            color: '#999',
-            curveness: 0.3
-          }
-        }]
-      };
+          animationDurationUpdate: 1500,
+          animationEasingUpdate: 'quinticInOut',
+          series: [{
+            type: 'graph',
+            layout: 'force',
+            data: nodes,
+            links: links,
+            categories: categories,
+            roam: true,
+            label: {
+              show: true,
+              position: 'right'
+            },
+            force: {
+              repulsion: 100,
+              edgeLength: 100
+            },
+            emphasis: {
+              focus: 'adjacency'
+            },
+            lineStyle: {
+              color: '#999',
+              curveness: 0.3
+            }
+          }]
+        };
 
-      // 使用配置项显示图谱
-      chart.setOption(option);
-      
-      // 隐藏加载状态
-      loadingMessage.classList.add('hidden');
+        // 使用配置项显示图谱
+        chart.setOption(option);
+        
+        // 隐藏加载状态
+        loadingMessage.classList.add('hidden');
+      } catch (error) {
+        console.error('获取知识图谱数据失败:', error);
+        // 显示错误状态
+        loadingMessage.classList.add('hidden');
+        errorMessage.classList.remove('hidden');
+      }
     } catch (error) {
       console.error('获取知识图谱数据失败:', error);
       // 显示错误状态
