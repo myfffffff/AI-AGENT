@@ -175,6 +175,7 @@
       });
 
       if (!response.ok) {
+        console.error('API请求失败:', response.status, response.statusText);
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
